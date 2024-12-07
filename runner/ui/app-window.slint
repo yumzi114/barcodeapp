@@ -1,0 +1,68 @@
+
+import { Carousel } from "carousel.slint";
+import { Card } from "card.slint";
+import { Theme } from "theme.slint";
+import { GridBox } from "std-widgets.slint";
+import { Content } from "content.slint";
+import { ContentCarousel } from "concar .slint";
+
+export component AppWindow inherits Window {
+    private property <[{ title: string, image: image}]> navigation-items: [
+        { title: "홈", image: @image-url("svg/home_black.svg") },
+        { title: "설정", image: @image-url("svg/settings_black.svg") },
+        { title: "기타", image: @image-url("svg/info_black.svg") },
+    ];
+    private property <int> selected-index: 1;
+
+    title: "Barcode App";
+    width: 1024px;
+    height: 600px;
+    background: @linear-gradient(90deg, #1B1B2F 0%, #162447 50%, #53354A 100%);
+    // background: Theme.window-background;
+    // padding: Theme.spacing-regular;
+    forward-focus: carousel;
+    default-font-family: Theme.font-family;
+    GridBox {
+        height: 600px;
+        Row{
+            carousel1 := ContentCarousel {
+                // y: (root.height - self.height) / 2;
+                height: 72%;
+                itemWidth: Theme.size-big;
+                // count: root.navigation-items.length;
+                selected-index <=> root.selected-index;
+                // spacing: Theme.size-regular;
+        
+                for item[index] in root.navigation-items : Content {
+                    // clicked => { root.selected-index = index; }
+        
+                    is-selected: index == root.selected-index;
+                    title: item.title;
+                    // image-source: item.image;
+                    // y: (parent.height - self.height) / 2;
+                }
+            }
+        }
+        Row{
+            carousel := Carousel {
+                // y: (root.height - self.height) / 2;
+                height: 28%;
+                itemWidth: Theme.size-medium;
+                count: root.navigation-items.length;
+                selected-index <=> root.selected-index;
+                spacing: Theme.spacing-medium;
+        
+                for item[index] in root.navigation-items : Card {
+                    clicked => { root.selected-index = index; }
+        
+                    is-selected: index == root.selected-index;
+                    title: item.title;
+                    image-source: item.image;
+                    y: (parent.height - self.height) / 2;
+                }
+            }
+
+        }
+    }
+    
+}

@@ -1,0 +1,16 @@
+[package]
+name = "runner"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# slint = "1.8.0"
+slint = { version = "1.8.0", features = ["backend-winit-x11", "compat-1-0"], default-features = false }
+slint-interpreter = "1.8.0"
+sqlx = { version = "0.8.2", features = ["runtime-tokio", "sqlite", "tls-none"] }
+tokio = { version = "1.42.0", features = ["full"] }
+
+[build-dependencies]
+slint-build = "1.8.0"
