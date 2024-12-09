@@ -1,0 +1,237 @@
+// Copyright © SixtyFPS GmbH <info@slint.dev>
+// SPDX-License-Identifier: MIT
+
+import { DemoPalette, Page, PushButton } from "../common.slint";
+import { VerticalBox } from "std-widgets.slint";
+import { DemoPalette } from "../theme2.slint";
+
+
+enum SubPage { None, Print, Scan, Copy, Usb }
+
+// component ActionButton inherits Rectangle {
+//     in property <image> icon <=> img.source;
+//     in property <string> text <=> label.text;
+//     width: DemoPalette.button-width;
+//     height: DemoPalette.button-height;
+
+//     callback clicked;
+
+//     VerticalLayout {
+//         spacing: 10px;
+
+//         Rectangle {
+//             border-radius: 25px;
+//             border-width: 5px;
+//             border-color: DemoPalette.secondary;
+//             background: DemoPalette.dark-mode ? DemoPalette.primary : DemoPalette.background;
+//             width: DemoPalette.button-width;
+//             height: self.width;
+
+//             img := Image {
+//                 colorize: DemoPalette.text-primary;
+//             }
+//         }
+
+//         label := Text {
+//             font-size: DemoPalette.base-font-size * 1.375;
+//             font-weight: 800;
+//             horizontal-alignment: center;
+//             color: DemoPalette.text-primary;
+//         }
+//     }
+
+//     TouchArea { clicked => { root.clicked() } }
+// }
+component SideBarIcon inherits Rectangle {
+    in-out property <bool> active;
+    in-out property <image> icon <=> i.source;
+    
+    callback activate;
+    
+    width: DemoPalette.side-bar-width;
+    height:DemoPalette.side-bar-height;
+    Rectangle {
+        // GridLayout {
+        //     padding: 0px;
+        //     @children
+        // }
+        i := Image {
+            colorize: root.active ? DemoPalette.active-page-icon-color : DemoPalette.inactive-page-icon-color;
+            animate colorize { duration: 125ms; }
+        }
+    }
+    TouchArea {
+        clicked => { root.activate(); }
+    }
+}
+export component MainPage inherits Page {
+    // in-out property <length> header-row-height: 40px;
+    // in-out property <length> button-spacing: 35px;
+    in-out property <SubPage> current-subpage: SubPage.None;
+    out property <int> active-page: 0;
+    
+    // header: @tr("Slint Printer Demo");
+    VerticalLayout {
+        padding: 10px;
+        padding-top: 65px;
+        Rectangle {
+            function calcPageY(pageNumber: int) -> length {
+                if (root.active-page == pageNumber) {
+                    return 0;
+                }
+                return root.active-page < pageNumber ? - self.width / 2: parent.width / 2;
+            }
+            property <duration> page-animation-duration: 250ms;
+            info-view := Rectangle {
+                property <int> pageNumber: 0;
+                x: calcPageY(0);
+                // animate x {
+                //     duration: page-animation-duration;
+                //     easing: ease-out-quad;
+                // }
+                // animate opacity {
+                //     duration: page-animation-duration;
+                //     easing: ease-out-quad;
+                // }
+                
+                opacity: root.active-page == 0 ? 1 : 0;
+                height: 295px;
+                border-radius: 30px;
+                background: DemoPalette.background;
+            }
+            info2-view := Rectangle {
+                property <int> pageNumber: 1;
+                x: calcPageY(1);
+                // animate x {
+                //     duration: page-animation-duration;
+                //     easing: ease-out-quad;
+                // }
+                // animate opacity {
+                //     duration: page-animation-duration;
+                //     easing: ease-out-quad;
+                // }
+                
+                opacity: root.active-page == pageNumber ? 1 : 0;
+                height: 295px;
+                border-radius: 30px;
+                background: DemoPalette.background;
+            }
+            info3-view := Rectangle {
+                property <int> pageNumber: 2;
+                x: calcPageY(2);
+                // animate x {
+                //     duration: page-animation-duration;
+                //     easing: ease-out-quad;
+                // }
+                // animate opacity {
+                //     duration: page-animation-duration;
+                //     easing: ease-out-quad;
+                // }
+                
+                opacity: root.active-page == pageNumber ? 1 : 0;
+                height: 295px;
+                border-radius: 30px;
+                background: DemoPalette.background;
+            }
+        }
+        
+        // info2-view := Rectangle {
+        //     property <int> pageNumber: 1;
+        //     // y: calcPageY(1);
+            
+        //     height: 296px;
+        //     border-radius: 30px;
+        //     background: #7c0909;
+        // }
+    }
+    sidebar:=Rectangle {
+        function icon-x(index: int) -> length {
+            return 50px // top padding
+                + index * DemoPalette.side-bar-width;
+        }
+        
+        x: 0px;
+        width: DemoPalette.side-bar-width;
+        Image {
+            y: parent.width - self.width + 1px; // workaround pixel gap
+            x: sidebar.icon-x(root.active-page) - self.width / 2 ;
+            source: @image-url("../images/page_selection.svg");
+            colorize: DemoPalette.background;
+            animate x { duration: 125ms; }
+        }
+        VerticalBox {
+            Rectangle{
+                width: 100%;
+                border-radius: 30px;
+                x: 0px;
+                HorizontalLayout {
+                    x:20px;
+                    y: 25px;
+                    for page-icon[idx] in [
+                        @image-url("../images/home.svg"),
+                        @image-url("../images/settings.svg"),
+                        @image-url("../images/ink.svg"),
+                    ]: SideBarIcon {
+                        activate => {
+                            root.active-page = idx;
+                        }
+                        icon: page-icon;
+                        active: root.active-page == idx;
+                    }
+                    
+                }
+            }
+            
+        }
+        
+    }
+    
+    // for action[idx] in [
+    //     { name: @tr("Print"), id: SubPage.Print, icon: @image-url("images/print.svg") },
+    //     { name: @tr("Scan"), id: SubPage.Scan, icon: @image-url("images/scan.svg") },
+    //     { name: @tr("Copy"), id: SubPage.Copy, icon: @image-url("images/copy.svg") },
+    //     { name: @tr("USB"), id: SubPage.Usb, icon: @image-url("images/usb.svg") },
+    // ]: ActionButton {
+    //     x: mod(idx, 2) * (DemoPalette.button-width + root.button-spacing);
+    //     y: floor(idx / 2) * (DemoPalette.button-height + root.button-spacing) 
+    //         + /* header row height */ 46px
+    //         + /* top-padding of printer queue */ 27px;
+    //     icon: action.icon;
+    //     text: action.name;
+
+    //     clicked => { root.current-subpage = action.id; }
+    // }
+
+    // queue-view := PrinterQueueView {
+    //     show-job-details(idx) => {
+    //         root.current-subpage = SubPage.Print;
+    //     }
+
+    //     x: parent.width - self.width;
+    //     width: 313px;
+    // }
+
+    // PrintPage {
+    //     back => { root.current-subpage = SubPage.None; }
+    //     x: root.current-subpage == SubPage.Print ? 0 : parent.width + parent.x + 2px;
+    //     animate x { duration: 125ms; easing: ease; }
+    // }
+
+    // ScanPage {
+    //     back => { root.current-subpage = SubPage.None; }
+    //     x: root.current-subpage == SubPage.Scan ? 0 : parent.width + parent.x + 2px;
+    //     animate x { duration: 125ms; easing: ease; }
+    // }
+
+    // CopyPage {
+    //     back => { root.current-subpage = SubPage.None; }
+    //     x: root.current-subpage == SubPage.Copy ? 0 : parent.width + parent.x + 2px;
+    //     animate x { duration: 125ms; easing: ease; }
+    // }
+
+    // UsbPage {
+    //     back => { root.current-subpage = SubPage.None; }
+    //     x: root.current-subpage == SubPage.Usb ? 0 : parent.width + parent.x + 2px;
+    //     animate x { duration: 125ms; easing: ease; }
+    // }
+}

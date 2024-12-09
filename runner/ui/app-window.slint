@@ -1,68 +1,128 @@
-
+import { Button, VerticalBox, GridBox } from "std-widgets.slint";
+import { DemoPalette } from "theme2.slint";
+import { Theme } from "theme.slint";
 import { Carousel } from "carousel.slint";
 import { Card } from "card.slint";
-import { Theme } from "theme.slint";
-import { GridBox } from "std-widgets.slint";
-import { Content } from "content.slint";
-import { ContentCarousel } from "concar .slint";
+import { MainPage } from "content/main_page.slint";
 
+// component SideBarIcon inherits Rectangle {
+//     in-out property <bool> active;
+//     in-out property <image> icon <=> i.source;
+//     callback activate;
+    
+//     width: DemoPalette.side-bar-width;
+//     height:DemoPalette.side-bar-height;
+//     Rectangle {
+//         // GridLayout {
+//         //     padding: 0px;
+//         //     @children
+//         // }
+//         i := Image {
+//             colorize: root.active ? DemoPalette.active-page-icon-color : DemoPalette.inactive-page-icon-color;
+//             animate colorize { duration: 125ms; }
+//         }
+//     }
+//     TouchArea {
+//         clicked => { root.activate(); }
+//     }
+// }
 export component AppWindow inherits Window {
+    width: 800px;
+    height: 480px;
+    background: @linear-gradient(90deg, #1B1B2F 0%, #162447 50%, #53354A 100%);
+    title: @tr("SLINT APP");
+    out property <int> active-page: 0;
     private property <[{ title: string, image: image}]> navigation-items: [
-        { title: "홈", image: @image-url("svg/home_black.svg") },
         { title: "설정", image: @image-url("svg/settings_black.svg") },
         { title: "기타", image: @image-url("svg/info_black.svg") },
+        { title: "홈", image: @image-url("svg/home_black.svg") },
+        { title: "테스트", image: @image-url("icons/at-solid.svg") },
+        { title: "테스트", image: @image-url("icons/cloud-solid.svg") },
     ];
-    private property <int> selected-index: 1;
+    private property <int> selected-index: 2;
+    VerticalBox {
+        Rectangle {
+            clip: true;
+            // x: main-view.border-radius / 2;
+            // y: main-view.border-radius / 2;
+            // width: main-view.width - main-view.border-radius;
+            // height: main-view.height - main-view.border-radius;
+            function calcPageY(pageNumber: int) -> length {
+                if (root.selected-index == pageNumber) {
+                    return 0;
+                }
+                return root.active-page < pageNumber ? - self.width / 2 : parent.width / 2;
+            }
 
-    title: "Barcode App";
-    width: 1024px;
-    height: 600px;
-    background: @linear-gradient(90deg, #1B1B2F 0%, #162447 50%, #53354A 100%);
-    // background: Theme.window-background;
-    // padding: Theme.spacing-regular;
-    forward-focus: carousel;
-    default-font-family: Theme.font-family;
-    GridBox {
-        height: 600px;
-        Row{
-            carousel1 := ContentCarousel {
-                // y: (root.height - self.height) / 2;
-                height: 72%;
-                itemWidth: Theme.size-big;
-                // count: root.navigation-items.length;
-                selected-index <=> root.selected-index;
-                // spacing: Theme.size-regular;
-        
-                for item[index] in root.navigation-items : Content {
-                    // clicked => { root.selected-index = index; }
-        
-                    is-selected: index == root.selected-index;
-                    title: item.title;
-                    // image-source: item.image;
-                    // y: (parent.height - self.height) / 2;
+            property <duration> page-animation-duration: 250ms;
+            main-page := MainPage {
+                property <int> pageNumber: 0;
+                y: calcPageY(2);
+                opacity: root.active-page == 0 ? 1 : 0;
+                animate y {
+                    duration: page-animation-duration;
+                    easing: ease-out-quad;
+                }
+                animate opacity {
+                    duration: page-animation-duration;
+                    easing: ease-out-quad;
                 }
             }
         }
-        Row{
-            carousel := Carousel {
-                // y: (root.height - self.height) / 2;
-                height: 28%;
-                itemWidth: Theme.size-medium;
-                count: root.navigation-items.length;
-                selected-index <=> root.selected-index;
-                spacing: Theme.spacing-medium;
-        
-                for item[index] in root.navigation-items : Card {
-                    clicked => { root.selected-index = index; }
-        
-                    is-selected: index == root.selected-index;
-                    title: item.title;
-                    image-source: item.image;
-                    y: (parent.height - self.height) / 2;
-                }
+        carousel := Carousel {
+            // y: (root.height - self.height) / 2;
+            height: 100px;
+            itemWidth: Theme.size-medium;
+            count: root.navigation-items.length;
+            selected-index <=> root.selected-index;
+            spacing: Theme.spacing-medium;
+            for item[index] in root.navigation-items : Card {
+                clicked => { root.selected-index = index; }
+                is-selected: index == root.selected-index;
+                title: item.title;
+                image-source: item.image;
+                y: (parent.height - self.height) / 2;
+                animate y { duration: 65ms; }
             }
-
         }
     }
-    
+
+    // sidebar:=Rectangle {
+    //     function icon-x(index: int) -> length {
+    //         return 50px // top padding
+    //             + index * DemoPalette.side-bar-width;
+    //     }
+    //     x: 0px;
+    //     width: DemoPalette.side-bar-width;
+    //     Image {
+    //         y: parent.width - self.width + 1px; // workaround pixel gap
+    //         x: sidebar.icon-x(root.active-page) - self.height / 2;
+    //         source: @image-url("images/page_selection.svg");
+    //         colorize: DemoPalette.background;
+    //         animate x { duration: 125ms; }
+    //     }
+    //     VerticalBox {
+    //         Rectangle{
+    //             width: 100%;
+    //             border-radius: 30px;
+    //             x: 0px;
+    //             HorizontalLayout {
+    //                 y: 25px;
+    //                 for page-icon[idx] in [
+    //                     @image-url("images/home.svg"),
+    //                     @image-url("images/settings.svg"),
+    //                     @image-url("images/ink.svg"),
+    //                 ]: SideBarIcon {
+    //                     activate => {
+    //                         root.active-page = idx;
+    //                     }
+    //                     icon: page-icon;
+    //                     active: root.active-page == idx;
+    //                 }
+                    
+    //             }
+    //         }
+    //     }
+    // }
 }
+
